@@ -128,12 +128,12 @@ elif [[ -n $URL ]]; then
          COMPLETE_PROMPT=$( (curl -s $URL | lynx -stdin -dump ; echo $PROMPT)  | jq -sR .)
 elif [[ -n $FILE ]]; then
     # if the file is text, dump it
-    # if it's a pdf, convert to text with pdftotext
-    # if it's a docx, convert to text with
     if [[ $(file -b --mime-type "$FILE") == text/* ]]; then
         COMPLETE_PROMPT=$( (cat "$FILE" ; echo $PROMPT)  | jq -sR .)
+    # if it's a pdf, convert to text with pdftotext
     elif [[ $(file -b --mime-type "$FILE") == "application/pdf" ]]; then
         COMPLETE_PROMPT=$( (pdftotext "$FILE" - ; echo $PROMPT)  | jq -sR .)
+    # if it's a docx, convert to text with pandoc
     elif [[ $(file -b --mime-type "$FILE") == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]] || [[ $(file -b --mime-type "$FILE") == "application/msword" ]]; then
         COMPLETE_PROMPT=$( ( pandoc -s "$FILE" -t plain -o - ; echo $PROMPT)  | jq -sR .)
     else
@@ -144,7 +144,7 @@ else
     COMPLETE_PROMPT=$( echo $PROMPT | jq -sR .)
 fi
 
-
+# Send the request and extract the response
 send_request "$COMPLETE_PROMPT" \
     | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
     | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | .choices[0].delta.content'
