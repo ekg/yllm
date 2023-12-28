@@ -50,9 +50,10 @@ We can also read from stdin into the prompt (with `-c`) at any point, but only o
 - `-t`, `--temperature <t>`: The temperature for the model (default: 0.1).
 - `-p`, `--top-p <p>`: The top-p value for the model (default: 0.9).
 - `-l`, `--max-tokens <n>`: The maximum number of tokens to generate (default: 4096).
-- `-c`, `--stdin`: Read data from standard input, put before prompt.
-- `-u`, `--url <url>`: Read text data from the given URL, put before prompt.
-- `-f`, `--file <file>`: Read text data from the given file, put before prompt.
+- `-c`, `--stdin`: Read data from standard input.
+- `-u`, `--url <url>`: Read text data from the given URL.
+- `-f`, `--file <file>`: Read text data from the given file.
+- `-d`, `--dump-prompt`: Write the prompt to stdout and exit.
 
 ## Dependencies
 

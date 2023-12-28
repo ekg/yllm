@@ -28,6 +28,7 @@ Options:
   -c, --stdin               Read data from standard input.
   -u, --url <url>           Read text data from the given URL.
   -f, --file <file>         Read text data from the given file.
+  -d, --dump-prompt         Write the prompt to stdout and exit.
 
 If no prompt is provided, read from standard input.
 The prompt is built from input arguments in the order they are provided.
@@ -100,12 +101,22 @@ while [[ $# -gt 0 ]]; do
             shift # past argument
             shift # past value
             ;;
+        -d|--dump-prompt)
+            DUMP_PROMPT=true
+            shift # past argument
+            ;;
         *)
             inputs+=("$1")
             shift # past argument
             ;;
     esac
 done
+
+# if we should dump the prompt
+if [[ $DUMP_PROMPT ]]; then
+    printf "%s\n" "${inputs[@]}"
+    exit 0
+fi
 
 unbuffer="stdbuf -o0 -i0"
 
