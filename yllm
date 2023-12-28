@@ -147,5 +147,4 @@ fi
 
 send_request "$COMPLETE_PROMPT" \
     | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
-    | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | .choices[0].delta.content' \
-    | sed 's%</s>$%\n%g'
+    | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | .choices[0].delta.content'
