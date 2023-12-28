@@ -1,7 +1,11 @@
 #!/bin/bash
 
 # Define the API URL and Authorization token
-API_URL="https://api.fireworks.ai/inference/v1/chat/completions"
+# Set this in your shell startup script, for instance:
+#export YLLM_API_URL="https://api.fireworks.ai/inference/v1/chat/completions"
+#export YLLM_API_URL="http://localhost:8080/v1/chat/completions"
+API_URL="$YLLM_API_URL"
+
 AUTH_TOKEN="Bearer $YLLM_API_KEY"
 
 # Default model

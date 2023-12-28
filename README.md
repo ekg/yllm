@@ -3,14 +3,21 @@
 ## Description
 
 `yllm` is a Bash script utility designed to query OpenAI compatible API endpoints.
-It's specifically been tested with Fireworks.ai.
+It's been tested with llama.cpp and Fireworks.ai, but should work with any endpoint that supports streaming.
 It is a simple and easy-to-use tool that allows you to interact with large language models (LLMs) by providing a prompt and receiving a response.
+`yllm` covers the three most common uses of LLMs: querying based on a prompt, document (`-f`), and web page (`-u`) inputs.
+
+# Setup
+
+To use `yllm` with llama.cpp, you'd first run the llama.cpp server: `server -m model.gguf`, then set the endpoint in your shell startup script with `export YLLM_API_URL="http://localhost:8080/v1/chat/completions"`.
+To use `yllm` with fireworks.ai or another commercial provider, first set your API key in the shell: `export YLLM_API_KEY=.....`, and also set an endpoint, e.g. `export YLLM_API_URL="https://api.fireworks.ai/inference/v1/chat/completions"`.
+The same pattern should work for any OpenAI-compatible API endpoint.
+
+Finally, put `yllm` in your `$PATH`.
 
 ## Usage
 
-To use `yllm`, first set your API key in the shell: `export YLLM_API_KEY=.....`.
-Put `yllm` in your `$PATH`.
-Then, simply run the script with the desired prompt as an argument.
+Simply run the script with the desired prompt as an argument.
 
 ```bash
 yllm [options] [prompt]
