@@ -138,12 +138,22 @@ send_request() {
         "stop": []
     }' "$prompt" "$MODEL" $MAX_TOKENS $TEMPERATURE $TOP_P)
 
+    temp_file=$(mktemp)
+    echo "$json_payload" > "$temp_file"
+
+    cleanup() {
+        [[ -n $temp_file && -f $temp_file ]] && rm -f "$temp_file"
+    }
+
+    trap cleanup EXIT
+
     $unbuffer curl --request POST \
          --silent \
          --url "$API_URL" \
          -H 'Content-Type: application/json' \
          -H "Authorization: $AUTH_TOKEN" \
-         --data "$json_payload"
+         --data @"$temp_file"
+
 }
 
 COMPLETE_PROMPT=$(printf "%s\n" "${inputs[@]}" | jq -sR .)
