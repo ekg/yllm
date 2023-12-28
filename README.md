@@ -31,6 +31,17 @@ yllm "tell me about goats"
 yllm tell me about goats
 ```
 
+The prompt is built from input arguments in the order they are provided.
+Multiple URLs, files, and prompt sections can be provided.
+For instance:
+
+```bash
+yllm "summarize the following code" -f yllm "suggest ways to improve the documentation:" -f README.md
+yllm "first document" -u https://cool.site "second document" -u https://xxxx.com "compare the two documents"
+```
+
+We can also read from stdin into the prompt (with `-c`) at any point, but only once.
+
 ### Options
 
 - `-h`, `--help`: Print this help text and exit.

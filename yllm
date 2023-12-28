@@ -5,7 +5,6 @@
 #export YLLM_API_URL="https://api.fireworks.ai/inference/v1/chat/completions"
 #export YLLM_API_URL="http://localhost:8080/v1/chat/completions"
 API_URL="$YLLM_API_URL"
-
 AUTH_TOKEN="Bearer $YLLM_API_KEY"
 
 # Default model
@@ -26,11 +25,12 @@ Options:
   -t, --temperature <t      The temperature for the model (default: $TEMPERATURE).
   -p, --top-p <p>           The top-p value for the model (default: $TOP_P).
   -l, --max-tokens <n>      The maximum number of tokens to generate (default: $MAX_TOKENS).
-  -c, --stdin               Read data from standard input, put before prompt.
-  -u, --url <url>           Read text data from the given URL, put before prompt.
-  -f, --file <file>         Read text data from the given file, put before prompt.
+  -c, --stdin               Read data from standard input.
+  -u, --url <url>           Read text data from the given URL.
+  -f, --file <file>         Read text data from the given file.
 
 If no prompt is provided, read from standard input.
+The prompt is built from input arguments in the order they are provided.
 EOF
 }
 
@@ -72,26 +72,36 @@ while [[ $# -gt 0 ]]; do
             shift # past argument
             shift # past value
             ;;
+
         -c|--stdin)
-            STDIN_CONTENT=true
+            STDIN_CONTENT=$(cat)
+            inputs+=("$STDIN_CONTENT")
             shift # past argument
             ;;
         -u|--url)
-            URL="$2"
+            URL_CONTENT="$(curl -s "$2" | lynx -stdin -dump)"
+            inputs+=("$URL_CONTENT")
             shift # past argument
             shift # past value
             ;;
         -f|--file)
             FILE="$2"
+            if [[ $(file -b --mime-type "$FILE") == text/* ]]; then
+                FILE_CONTENT="$(cat "$FILE")"
+            elif [[ $(file -b --mime-type "$FILE") == "application/pdf" ]]; then
+                FILE_CONTENT="$(pdftotext "$FILE" -)"
+            elif [[ $(file -b --mime-type "$FILE") == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]] || [[ $(file -b --mime-type "$FILE") == "application/msword" ]]; then
+                FILE_CONTENT="$(pandoc -s "$FILE" -t plain -o -)"
+            else
+                echo "Unsupported file type: $(file -b --mime-type "$FILE")"
+                exit 1
+            fi
+            inputs+=("$FILE_CONTENT")
             shift # past argument
             shift # past value
             ;;
         *)
-            if [[ -z $PROMPT ]]; then
-                PROMPT="$1"
-            else
-                PROMPT="$PROMPT $1"
-            fi
+            inputs+=("$1")
             shift # past argument
             ;;
     esac
@@ -125,30 +135,10 @@ send_request() {
          --data "$json_payload"
 }
 
-# Build the complete prompt
-if [[ -n $STDIN_CONTENT ]]; then
-    COMPLETE_PROMPT=$( (cat ; echo $PROMPT)  | jq -sR .)
-elif [[ -n $URL ]]; then
-         COMPLETE_PROMPT=$( (curl -s $URL | lynx -stdin -dump ; echo $PROMPT)  | jq -sR .)
-elif [[ -n $FILE ]]; then
-    # if the file is text, dump it
-    if [[ $(file -b --mime-type "$FILE") == text/* ]]; then
-        COMPLETE_PROMPT=$( (cat "$FILE" ; echo $PROMPT)  | jq -sR .)
-    # if it's a pdf, convert to text with pdftotext
-    elif [[ $(file -b --mime-type "$FILE") == "application/pdf" ]]; then
-        COMPLETE_PROMPT=$( (pdftotext "$FILE" - ; echo $PROMPT)  | jq -sR .)
-    # if it's a docx, convert to text with pandoc
-    elif [[ $(file -b --mime-type "$FILE") == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]] || [[ $(file -b --mime-type "$FILE") == "application/msword" ]]; then
-        COMPLETE_PROMPT=$( ( pandoc -s "$FILE" -t plain -o - ; echo $PROMPT)  | jq -sR .)
-    else
-        echo "Unsupported file type: $(file -b --mime-type "$FILE")"
-        exit 1
-    fi
-else
-    COMPLETE_PROMPT=$( echo $PROMPT | jq -sR .)
-fi
+COMPLETE_PROMPT=$(printf "%s\n" "${inputs[@]}" | jq -sR .)
 
 # Send the request and extract the response
 send_request "$COMPLETE_PROMPT" \
+    | $unbuffer sed 's%</s>"%"%' \
     | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
-    | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | .choices[0].delta.content'
+    | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | if .choices[0].finish_reason == "stop" then .choices[0].delta.content + "\n" else .choices[0].delta.content end'
