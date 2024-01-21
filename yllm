@@ -10,7 +10,7 @@ AUTH_TOKEN="Bearer $YLLM_API_KEY"
 # Default model
 #MODEL="accounts/fireworks/models/mixtral-8x7b-instruct"
 MODEL="accounts/fireworks/models/yi-34b-200k-capybara"
-MAX_TOKENS=4096
+MAX_TOKENS=8192
 TEMPERATURE=0.1
 TOP_P=0.9
 
