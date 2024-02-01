@@ -7,10 +7,12 @@
 API_URL="$YLLM_API_URL"
 AUTH_TOKEN="Bearer $YLLM_API_KEY"
 
-# Default model
-#MODEL="accounts/fireworks/models/mixtral-8x7b-instruct"
-MODEL="accounts/fireworks/models/yi-34b-200k-capybara"
-MAX_TOKENS=8192
+# Default model, if YLLM_MODEL is set, use that
+if [[ -n "$YLLM_MODEL" ]]; then
+  MODEL="$YLLM_MODEL"
+fi
+
+MAX_TOKENS=4096
 TEMPERATURE=0.1
 TOP_P=0.9
 
@@ -20,8 +22,9 @@ Usage: $0 [options] [--] [prompt]
 
 Options:
   -h, --help                Print this help text and exit.
-  -a, --api-url <url>       The API URL to use (default: $API_URL).
-  -m, --model <model>       The model to use for the completion (default: $MODEL).
+  -a, --api-url <url>       The API URL to use (default: $YLLM_API_URL).
+  -k, --api-key <key>       The API key to use (default: $YLLM_API_KEY).
+  -m, --model <model>       The model to use for the completion (default: $YLLM_MODEL).
   -t, --temperature <t      The temperature for the model (default: $TEMPERATURE).
   -p, --top-p <p>           The top-p value for the model (default: $TOP_P).
   -l, --max-tokens <n>      The maximum number of tokens to generate (default: $MAX_TOKENS).
@@ -50,6 +53,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         -a|--api-url)
             API_URL="$2"
+            shift # past argument
+            shift # past value
+            ;;
+        -k|--api-key)
+            AUTH_TOKEN="Bearer $2"
             shift # past argument
             shift # past value
             ;;
@@ -112,6 +120,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# if no model has been specified
+if [[ -z "$MODEL" ]]; then
+  echo "No model specified. Please set the YLLM_MODEL environment variable or use the -m option."
+  exit 1
+fi
+
 # if we should dump the prompt
 if [[ $DUMP_PROMPT ]]; then
     printf "%s\n" "${inputs[@]}"
@@ -132,11 +146,10 @@ send_request() {
         "model": "%s",
         "stream": true,
         "n": 1,
-        "max_tokens": %d,
         "temperature": %.2f,
-        "top_p": %.2f,
-        "stop": []
-    }' "$prompt" "$MODEL" $MAX_TOKENS $TEMPERATURE $TOP_P)
+        "max_tokens": %d,
+        "top_p": %.2f
+    }' "$prompt" "$MODEL" $TEMPERATURE $MAX_TOKENS $TOP_P)
 
     temp_file=$(mktemp)
     echo "$json_payload" > "$temp_file"
@@ -147,13 +160,15 @@ send_request() {
 
     trap cleanup EXIT
 
+    cat $temp_file
+
     $unbuffer curl --request POST \
          --silent \
          --url "$API_URL" \
-         -H 'Content-Type: application/json' \
-         -H "Authorization: $AUTH_TOKEN" \
+         -H 'content-Type: application/json' \
+         -H "authorization: $AUTH_TOKEN" \
          --data @"$temp_file"
-
+    
 }
 
 COMPLETE_PROMPT=$(printf "%s\n" "${inputs[@]}" | jq -sR .)
