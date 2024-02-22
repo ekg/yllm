@@ -44,7 +44,17 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         -s|--settings)
-            source "$2"
+            SETTINGS_FILE="$2"
+            # Check if the specified settings file exists in the current directory
+            if [[ -f "$SETTINGS_FILE" ]]; then
+                source "$SETTINGS_FILE"
+            # If not found, check in the ~/.yllm directory
+            elif [[ -f "$HOME/.yllm/$SETTINGS_FILE" ]]; then
+                source "$HOME/.yllm/$SETTINGS_FILE"
+            else
+                echo "Settings file not found: $SETTINGS_FILE"
+                exit 1
+            fi
             shift # past argument
             shift # past value
             ;;

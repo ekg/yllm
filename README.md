@@ -6,9 +6,9 @@
 
 ## Setup
 
-To configure `yllm` for use with LLM APIs, you need to set the API endpoint and, the API key, and the model.
-This can be done on the command line, but the most flexible approach is to set up configuration files including the key parameters for each model that can be used to load the key variables.
-You'll want to include at least this information to set up a configuration.
+To configure `yllm` for use with LLM APIs, you need to set the API endpoint, the API key, and the model. This can be done on the command line, but a more flexible approach is to set up configuration files containing the key parameters for each model. These configuration files can then be easily loaded to set the necessary variables.
+
+Create a settings file with the following content:
 
 ```bash
 YLLM_MODEL="accounts/fireworks/models/yi-34b-200k-capybara"
@@ -18,13 +18,24 @@ YLLM_API_KEY="your_fireworks_api_key_here"
 
 Replace `"your_fireworks_api_key_here"` with your actual API key.
 
-To use the settings file, simply include the `-s` option followed by the path to your settings file when running `yllm`:
+To use a settings file, include the `-s` option followed by the path to your settings file when running `yllm`:
 
 ```bash
-yllm -s ~/.yllm/fireworks "What is the capital of France?"
+yllm -s path/to/your/settings_file "What is the capital of France?"
 ```
 
-This approach allows you to easily switch between different configurations for various models or API providers without the need to manually change environment variables each time. It's recommended to store these settings files in a directory like `~/.yllm/`, for example, `~/.yllm/gpt-4` or `~/.yllm/llama2-70b`, to keep your configurations organized.
+`yllm` will check if the passed settings file exists, and use it if it does.
+If it doesn't it'll check you `~/.yllm` directory, allowing you to organize your settings files neatly (e.g., `~/.yllm/yi-34b`, `~/.yllm/gpt-4`).
+
+The settings feature enables you to switch between different configurations for various models or API providers without manually changing environment or command line variables each time.
+
+### Example
+
+To use an API and model defined in a settings file `yi-34b` located in the `~/.yllm` directory, you can run:
+
+```bash
+yllm -s yi-34b "What is the capital of France?"
+```
 
 ## Usage
 
