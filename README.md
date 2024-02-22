@@ -2,49 +2,54 @@
 
 ## Description
 
-`yllm` is a Bash script utility designed to query OpenAI compatible API endpoints.
-It's been tested with llama.cpp and Fireworks.ai, but should work with any endpoint that supports streaming.
-It is a simple and easy-to-use tool that allows you to interact with large language models (LLMs) by providing a prompt and receiving a response.
-`yllm` covers the three most common uses of LLMs: querying based on a prompt, document (`-f`), and web page (`-u`) inputs.
+`yllm` is a Bash script utility designed to query OpenAI compatible API endpoints, including but not limited to llama.cpp, Fireworks.ai, OpenAI, and together.ai. It supports streaming and is compatible with any endpoint that adheres to the OpenAI API specifications. `yllm` simplifies the interaction with large language models (LLMs) by allowing users to input a prompt, document (`-f`), or web page (`-u`) and receive a response. It is designed to be straightforward, covering the three most common uses of LLMs efficiently, and also a powerful tool for rapid programmatic prompt construction.
 
-# Setup
+## Setup
 
-To use `yllm` with llama.cpp, you'd first run the llama.cpp server: `server -m model.gguf`, then set the endpoint in your shell startup script with `export YLLM_API_URL="http://localhost:8080/v1/chat/completions"`.
-To use `yllm` with fireworks.ai or another commercial provider, first set your API key in the shell: `export YLLM_API_KEY=.....`, and also set an endpoint, e.g. `export YLLM_API_URL="https://api.fireworks.ai/inference/v1/chat/completions"`.
-The same pattern should work for any OpenAI-compatible API endpoint.
+To configure `yllm` for use with LLM APIs, you need to set the API endpoint and, the API key, and the model.
+This can be done on the command line, but the most flexible approach is to set up configuration files including the key parameters for each model that can be used to load the key variables.
+You'll want to include at least this information to set up a configuration.
 
-Finally, put `yllm` in your `$PATH`.
+```bash
+YLLM_MODEL="accounts/fireworks/models/yi-34b-200k-capybara"
+YLLM_API_URL="https://api.fireworks.ai/inference/v1/chat/completions"
+YLLM_API_KEY="your_fireworks_api_key_here"
+```
+
+Replace `"your_fireworks_api_key_here"` with your actual API key.
+
+To use the settings file, simply include the `-s` option followed by the path to your settings file when running `yllm`:
+
+```bash
+yllm -s ~/.yllm/fireworks "What is the capital of France?"
+```
+
+This approach allows you to easily switch between different configurations for various models or API providers without the need to manually change environment variables each time. It's recommended to store these settings files in a directory like `~/.yllm/`, for example, `~/.yllm/gpt-4` or `~/.yllm/llama2-70b`, to keep your configurations organized.
 
 ## Usage
 
-Simply run the script with the desired prompt as an argument.
+Run the script with your desired prompt as an argument. You can input the prompt directly or use options for more complex inputs like documents or web pages.
 
 ```bash
 yllm [options] [prompt]
 ```
 
-All positional arguments are concatenated into the prompt, allowing for a quick quote-free style.
-The following two examples are the same:
+Prompts can be built from input arguments in the order they are provided. Here are some examples:
 
 ```bash
 yllm "tell me about goats"
 yllm tell me about goats
 ```
 
-The prompt is built from input arguments in the order they are provided.
-Multiple URLs, files, and prompt sections can be provided.
-For instance:
-
 ```bash
 yllm "summarize the following code" -f yllm "suggest ways to improve the documentation:" -f README.md
 yllm "first document" -u https://cool.site "second document" -u https://xxxx.com "compare the two documents"
 ```
 
-We can also read from stdin into the prompt (with `-c`) at any point, but only once.
-
 ### Options
 
-- `-h`, `--help`: Print this help text and exit.
+- `-h`, `--help`: Print help text and exit.
+- `-s`, `--settings <file>`: Load `YLLM_*` environment settings from the given file.
 - `-a`, `--api-url`: The API URL to use (default: `https://api.fireworks.ai/inference/v1/chat/completions`).
 - `-m`, `--model <model>`: The model to use for the completion (default: `accounts/fireworks/models/yi-34b-200k-capybara`).
 - `-t`, `--temperature <t>`: The temperature for the model (default: 0.1).
@@ -54,19 +59,12 @@ We can also read from stdin into the prompt (with `-c`) at any point, but only o
 - `-u`, `--url <url>`: Read text data from the given URL.
 - `-f`, `--file <file>`: Read text data from the given file.
 - `-d`, `--dump-prompt`: Write the prompt to stdout and exit.
+- `-r`, `--raw-stream`: Show the raw JSONL stream from the API.
 
 ## Dependencies
 
-yllm depends on the following utilities:
-
-- `curl`: For making HTTP requests to the API endpoint.
-- `lynx`: For extracting text from web pages.
-- `jq`: For JSON manipulation and parsing.
-- `file`: For checking file types.
-- `pdftotext`: For converting PDF files to text.
-- `pandoc`: For converting DOCX/DOC files to text.
-- `stdbuf`: For buffering standard output.
+`yllm` depends on `curl`, `lynx`, `jq`, `file`, `pdftotext`, `pandoc`, and `stdbuf` for its operations.
 
 ## License
 
-yllm is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+`yllm` is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
