@@ -95,11 +95,18 @@ while [[ $# -gt 0 ]]; do
             ;;
         -f|--file)
             FILE="$2"
-            if [[ $(file -b --mime-type "$FILE") == text/* ]]; then
+            mimetype=$(file -b --mime-type "$FILE")
+            if [[ $mimetype == text/* ]]; then
                 FILE_CONTENT="$(cat "$FILE")"
-            elif [[ $(file -b --mime-type "$FILE") == "application/pdf" ]]; then
+            elif [[ $mimetype == "inode/symlink" ]]; then
+                FILE_CONTENT="$(cat "$FILE")"
+            elif [[ $mimetype == "application/pdf" ]]; then
                 FILE_CONTENT="$(pdftotext "$FILE" -)"
-            elif [[ $(file -b --mime-type "$FILE") == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]] || [[ $(file -b --mime-type "$FILE") == "application/msword" ]]; then
+                # epub format
+            elif [[ $mimetype == "application/epub+zip" ]] \
+                || [[ $mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]] \
+                || [[ $mimetype == "application/msword" ]] \
+                || [[ $mimetype == "application/postscript" ]]; then
                 FILE_CONTENT="$(pandoc -s "$FILE" -t plain -o -)"
             else
                 echo "Unsupported file type: $(file -b --mime-type "$FILE")"
