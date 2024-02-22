@@ -16,6 +16,8 @@ MAX_TOKENS=4096
 TEMPERATURE=0.1
 TOP_P=0.9
 
+RAW_STREAM=false
+
 function print_help() {
   cat <<EOF
 Usage: $0 [options] [--] [prompt]
@@ -32,6 +34,7 @@ Options:
   -u, --url <url>           Read text data from the given URL.
   -f, --file <file>         Read text data from the given file.
   -d, --dump-prompt         Write the prompt to stdout and exit.
+  -r, --raw-stream          Show the raw JSONL stream from the API.
 
 If no prompt is provided, read from standard input.
 The prompt is built from input arguments in the order they are provided.
@@ -120,6 +123,10 @@ while [[ $# -gt 0 ]]; do
             DUMP_PROMPT=true
             shift # past argument
             ;;
+        -r|--raw-stream)
+            RAW_STREAM=true
+            shift # past argument
+            ;;
         *)
             inputs+=("$1")
             shift # past argument
@@ -179,6 +186,11 @@ send_request() {
 }
 
 COMPLETE_PROMPT=$(printf "%s\n" "${inputs[@]}" | jq -sR .)
+
+if [[ $RAW_STREAM ]]; then
+    send_request "$COMPLETE_PROMPT"
+    exit 0
+fi
 
 # Send the request and extract the response
 send_request "$COMPLETE_PROMPT" \
