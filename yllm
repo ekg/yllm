@@ -109,6 +109,8 @@ while [[ $# -gt 0 ]]; do
                 FILE_CONTENT="$(cat "$FILE")"
             elif [[ $mimetype == "application/pdf" ]]; then
                 FILE_CONTENT="$(pdftotext "$FILE" -)"
+            elif [[ $mimetype == "application/json" ]]; then
+                FILE_CONTENT="$(cat "$FILE")"
                 # epub format
             elif [[ $mimetype == "application/epub+zip" ]] \
                 || [[ $mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]] \
@@ -187,7 +189,6 @@ send_request() {
          -H "authorization: Bearer $YLLM_API_KEY" \
          $YLLM_EXTRA_CURL_FLAGS \
          --data @"$temp_file"
-    
 }
 
 COMPLETE_PROMPT=$(printf "%s\n" "${inputs[@]}" | jq -sR .)
