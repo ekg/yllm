@@ -111,7 +111,8 @@ while [[ $# -gt 0 ]]; do
                 FILE_CONTENT="$(pdftotext "$FILE" -)"
             elif [[ $mimetype == "application/json" ]]; then
                 FILE_CONTENT="$(cat "$FILE")"
-                # epub format
+            elif [[ $mimetype == "application/javascript" ]]; then
+                FILE_CONTENT="$(cat "$FILE")"
             elif [[ $mimetype == "application/epub+zip" ]] \
                 || [[ $mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]] \
                 || [[ $mimetype == "application/msword" ]] \
