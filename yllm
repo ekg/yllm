@@ -141,10 +141,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# if no model has been specified
-if [[ -z "$YLLM_MODEL" ]]; then
-  echo "No model specified. Please set the YLLM_MODEL environment variable, use the -m option, or specify a config file."
-  exit 1
+if [[ $DUMP_PROMPT = false ]]; then
+  # if no model has been specified
+  if [[ -z "$YLLM_MODEL" ]]; then
+    echo "No model specified. Please set the YLLM_MODEL environment variable, use the -m option, or specify a config file."
+    exit 1
+  fi
 fi
 
 # if we should dump the prompt
