@@ -159,6 +159,13 @@ unbuffer="stdbuf -o0 -i0"
 
 send_request() {
     prompt="$1"
+    if [[ $YLLM_DEEPINFRA_MODE ]]; then
+    prompt=$(echo "$prompt" | sed -e 's/\[INST\]//g' -e 's/\[\/INST\]//g')
+    json_payload='{
+        "input": '$prompt',
+        "stream": true
+    }'
+    else
     json_payload=$(printf '{
         "messages": [
             {
@@ -173,6 +180,7 @@ send_request() {
         "max_tokens": %d,
         "top_p": %.2f
     }' "$prompt" "$YLLM_MODEL" $YLLM_TEMPERATURE $YLLM_MAX_TOKENS $YLLM_TOP_P)
+    fi
 
     temp_file=$(mktemp)
     echo "$json_payload" > "$temp_file"
@@ -202,7 +210,16 @@ if [[ $RAW_STREAM = true ]]; then
 fi
 
 # Send the request and extract the response
-send_request "$COMPLETE_PROMPT" \
+# do this if we're not in deepinfra mode
+if [[ -z $YLLM_DEEPINFRA_MODE ]]; then
+    send_request "$COMPLETE_PROMPT" \
     | $unbuffer sed 's%</s>"%"%' \
     | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
     | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | if .choices[0].finish_reason == "stop" then .choices[0].delta.content + "\n" else .choices[0].delta.content end'
+    exit 0
+else
+send_request "$COMPLETE_PROMPT" \
+    | $unbuffer sed 's%</s>"%"%' \
+    | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
+    | $unbuffer jq -j --unbuffered 'select(.token.text != null) | .token.text'
+fi
