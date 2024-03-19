@@ -165,6 +165,14 @@ send_request() {
         "input": '$prompt',
         "stream": true
     }'
+    elif [[ $YLLM_COHERE_MODE ]]; then
+    json_payload=$(printf '{
+        "message": %s,
+        "stream": true,
+        "temperature": %.2f,
+        "max_tokens": %d,
+        "top_p": %.2f
+    }' "$prompt" $YLLM_TEMPERATURE $YLLM_MAX_TOKENS $YLLM_TOP_P)
     else
     json_payload=$(printf '{
         "messages": [
@@ -211,15 +219,17 @@ fi
 
 # Send the request and extract the response
 # do this if we're not in deepinfra mode
-if [[ -z $YLLM_DEEPINFRA_MODE ]]; then
+if [[ $YLLM_DEEPINFRA_MODE ]]; then
+    send_request "$COMPLETE_PROMPT" \
+    | $unbuffer sed 's%</s>"%"%' \
+    | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
+    | $unbuffer jq -j --unbuffered 'select(.token.text != null) | .token.text'
+elif [[ $YLLM_COHERE_MODE ]]; then
+    send_request "$COMPLETE_PROMPT" \
+    | $unbuffer jq -j --unbuffered 'select(.event_type == "text-generation") | if .is_finished then "\n" else .text end'
+else
     send_request "$COMPLETE_PROMPT" \
     | $unbuffer sed 's%</s>"%"%' \
     | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
     | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | if .choices[0].finish_reason == "stop" then .choices[0].delta.content + "\n" else .choices[0].delta.content end'
-    exit 0
-else
-send_request "$COMPLETE_PROMPT" \
-    | $unbuffer sed 's%</s>"%"%' \
-    | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
-    | $unbuffer jq -j --unbuffered 'select(.token.text != null) | .token.text'
 fi
