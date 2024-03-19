@@ -165,6 +165,15 @@ send_request() {
         "input": '$prompt',
         "stream": true
     }'
+    elif [[ $YLLM_COHERE_WEB_MODE ]]; then
+    json_payload=$(printf '{
+        "message": %s,
+        "stream": true,
+        "connectors": [{"id": "web-search"}],
+        "temperature": %.2f,
+        "max_tokens": %d,
+        "top_p": %.2f
+    }' "$prompt" $YLLM_TEMPERATURE $YLLM_MAX_TOKENS $YLLM_TOP_P)
     elif [[ $YLLM_COHERE_MODE ]]; then
     json_payload=$(printf '{
         "message": %s,
@@ -187,7 +196,7 @@ send_request() {
         "temperature": %.2f,
         "max_tokens": %d,
         "top_p": %.2f
-    }' "$prompt" "$YLLM_MODEL" $YLLM_TEMPERATURE $YLLM_MAX_TOKENS $YLLM_TOP_P)
+    }' "$prompt" "$YLLM_MODEL" $YLLM_TEMPERATURE $YLLM_MAX_TOKENS $YLLM_TOP_P )
     fi
 
     temp_file=$(mktemp)
