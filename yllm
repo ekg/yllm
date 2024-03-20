@@ -199,6 +199,8 @@ send_request() {
     }' "$prompt" "$YLLM_MODEL" $YLLM_TEMPERATURE $YLLM_MAX_TOKENS $YLLM_TOP_P )
     fi
 
+    json_payload=$(echo "$json_payload" | jq -c .)
+
     temp_file=$(mktemp)
     echo "$json_payload" > "$temp_file"
 
