@@ -23,6 +23,7 @@ Options:
   -d, --dump-prompt         Write the prompt to stdout and exit.
   -r, --raw-stream          Show the raw JSONL stream from the API.
   -z, --save-it <dir>       Write inputs and outputs to hash-named file in dir.
+  -p, --pdf-it              When saving, convert output to PDF.
 
 If no prompt is provided, read from standard input.
 The prompt is built from input arguments in the order they are provided.
@@ -138,6 +139,10 @@ while [[ $# -gt 0 ]]; do
         -z|--save-it)
             YLLM_SAVE_IT="$2"
             shift # past argument
+            shift # past argument
+            ;;
+        -P|--pdf-it)
+            YLLM_PDF_IT=1
             shift # past argument
             ;;
         *)
@@ -329,4 +334,13 @@ else
     | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | if .choices[0].finish_reason == "stop" then .choices[0].delta.content + "\n" else .choices[0].delta.content end' \
     | tee $output_file
     echo
+fi
+
+if [[ $YLLM_PDF_IT ]]; then
+    if [[ $YLLM_SAVE_IT ]]; then
+        pandoc $output_file -o $output_file_base.pdf \
+               --pdf-engine=xelatex -V mainfont="Liberation Sans" -V geometry:margin=1in
+    else
+        echo "Error: --pdf-it requires --save-it to be set"
+    fi
 fi
