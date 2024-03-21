@@ -4,8 +4,6 @@ YLLM_MAX_TOKENS=4096
 YLLM_TEMPERATURE=0.1
 YLLM_TOP_P=0.9
 
-RAW_STREAM=false
-
 function print_help() {
   cat <<EOF
 Usage: $0 [options] [--] [prompt]
@@ -24,6 +22,7 @@ Options:
   -f, --file <file>         Read text data from the given file.
   -d, --dump-prompt         Write the prompt to stdout and exit.
   -r, --raw-stream          Show the raw JSONL stream from the API.
+  -z, --save-it <dir>       Write inputs and outputs to hash-named file in dir.
 
 If no prompt is provided, read from standard input.
 The prompt is built from input arguments in the order they are provided.
@@ -113,6 +112,8 @@ while [[ $# -gt 0 ]]; do
                 FILE_CONTENT="$(cat "$FILE")"
             elif [[ $mimetype == "application/javascript" ]]; then
                 FILE_CONTENT="$(cat "$FILE")"
+            elif [[ $mimetype == "application/x-ndjson" ]]; then
+                FILE_CONTENT="$(cat "$FILE")"
             elif [[ $mimetype == "application/epub+zip" ]] \
                 || [[ $mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]] \
                 || [[ $mimetype == "application/msword" ]] \
@@ -127,11 +128,16 @@ while [[ $# -gt 0 ]]; do
             shift # past value
             ;;
         -d|--dump-prompt)
-            DUMP_PROMPT=true
+            DUMP_PROMPT=1
             shift # past argument
             ;;
         -r|--raw-stream)
-            RAW_STREAM=true
+            RAW_STREAM=1
+            shift # past argument
+            ;;
+        -z|--save-it)
+            YLLM_SAVE_IT="$2"
+            shift # past argument
             shift # past argument
             ;;
         *)
@@ -141,18 +147,16 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ $DUMP_PROMPT = false ]]; then
-  # if no model has been specified
-  if [[ -z "$YLLM_MODEL" ]]; then
-    echo "No model specified. Please set the YLLM_MODEL environment variable, use the -m option, or specify a config file."
-    exit 1
-  fi
-fi
-
 # if we should dump the prompt
 if [[ $DUMP_PROMPT ]]; then
     printf "%s\n" "${inputs[@]}"
     exit 0
+else
+    # if no model has been specified
+    if [[ -z "$YLLM_MODEL" ]]; then
+        echo "No model specified. Please set the YLLM_MODEL environment variable, use the -m option, or specify a config file."
+        exit 1
+    fi
 fi
 
 unbuffer="stdbuf -o0 -i0"
@@ -210,7 +214,7 @@ send_request() {
 
     trap cleanup EXIT
 
-    cat $temp_file
+    #cat $temp_file
 
     $unbuffer curl --request POST \
          --silent \
@@ -223,9 +227,21 @@ send_request() {
 
 COMPLETE_PROMPT=$(printf "%s\n" "${inputs[@]}" | jq -sR .)
 
-if [[ $RAW_STREAM = true ]]; then
+if [[ $RAW_STREAM ]]; then
     send_request "$COMPLETE_PROMPT"
     exit 0
+fi
+
+if [[ $YLLM_SAVE_IT ]]; then
+    hash=$(echo -n "$COMPLETE_PROMPT" | sha256sum | awk '{print $1}' | head -c 8)
+    output_file_base=$(mktemp -p "$YLLM_SAVE_IT" yllm_$hash.XXXXXX)
+    rm -f "$output_file_base"
+    output_file=$output_file_base.md
+    output_raw=$output_file_base.jsonl
+else
+    output_file=/dev/null
+    output_raw=/dev/null
+
 fi
 
 # Send the request and extract the response
@@ -234,26 +250,83 @@ if [[ $YLLM_DEEPINFRA_MODE ]]; then
     send_request "$COMPLETE_PROMPT" \
     | $unbuffer sed 's%</s>"%"%' \
     | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
-    | $unbuffer jq -j --unbuffered 'select(.token.text != null) | .token.text'
+    | $unbuffer jq -j --unbuffered 'select(.token.text != null) | .token.text' \
+    | tee $output_file
 elif [[ $YLLM_COHERE_MODE ]]; then
     send_request "$COMPLETE_PROMPT" \
-    | $unbuffer jq -j --unbuffered 'select(.event_type == "text-generation") | if .is_finished then "\n" else .text end'
+        | $unbuffer jq -j --unbuffered 'select(.event_type == "text-generation") | if .is_finished then "\n" else .text end' \
+        | tee $output_file
 elif [[ $YLLM_COHERE_WEB_MODE ]]; then
-    temp_file=$(mktemp -p $(pwd))
-    cleanup() {
-        [[ -n $temp_file && -f $temp_file ]] && rm -f "$temp_file"
-    }
-    trap cleanup EXIT
     send_request "$COMPLETE_PROMPT" \
-    | tee $temp_file \
-    | $unbuffer jq -j --unbuffered 'select(.event_type == "text-generation") | if .is_finished then "\n" else .text end'
-    echo
-    echo
-    cat $temp_file | jq -j --unbuffered 'select(.event_type == "search-results") | .documents[] | .url + "\n"'
+        | tee $output_raw \
+        | $unbuffer jq -j --unbuffered 'select(.event_type == "text-generation") | if .is_finished then "\n" else .text end' \
+        | tee $output_file
+
+    if [[ $YLLM_SAVE_IT ]]; then
+        # Extract the documents and citations from the JSON record
+    jq 'select(.event_type == "stream-end")' $output_raw >$output_raw.end
+    (python3 - "$output_raw.end" <<'EOF'
+import json
+import sys
+
+infile = sys.argv[1]
+
+# Load the model output from a file
+with open(infile, 'r') as file:
+    record = json.load(file)
+
+# Extract the main text, citations, and documents from the JSON record
+main_text = record['response']['text']
+citations = record['response']['citations']
+documents = {doc['id']: doc for doc in record['response']['documents']}
+
+# Initialize an empty string to hold the annotated text
+annotated_text = ""
+last_pos = 0  # Keep track of the last position processed
+
+# Iterate over the citations
+for citation in citations:
+    # Add the text from the last position to the start of the current citation
+    annotated_text += main_text[last_pos:citation['start']]
+    
+    # Add the citation text
+    citation_text = main_text[citation['start']:citation['end']]
+    annotated_text += citation_text
+
+    # Prepare to add links
+    links = []
+    
+    # Construct the markdown links for each document in the citation
+    for doc_id in citation['document_ids']:
+        # Extract the document index from the ID and increment by 1 for natural numbering
+        doc_index = doc_id.split('_')[-1].split(':')[0]
+        # Extract the actual URL for the document
+        url = documents[doc_id]['url'] if doc_id in documents else "xxxxx"
+        # Append the markdown link to the links list
+        # (as long as it's not a duplicate)
+        if url not in links:
+            links.append(f"[{doc_index}]({url})")
+    
+    # Join all links with a comma and add them in a single set of brackets
+    annotated_text += f" [{','.join(links)}]"
+    
+    # Update the last processed position
+    last_pos = citation['end']
+
+# Add any remaining text after the last citation
+annotated_text += main_text[last_pos:]
+
+# Print the annotated markdown text
+print(annotated_text)
+EOF
+    ) > $output_file
+    rm -f $output_raw.end
+    fi
 else
     send_request "$COMPLETE_PROMPT" \
     | $unbuffer sed 's%</s>"%"%' \
     | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
-    | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | if .choices[0].finish_reason == "stop" then .choices[0].delta.content + "\n" else .choices[0].delta.content end'
+    | $unbuffer jq -j --unbuffered 'select(.choices[0].delta.content != null) | if .choices[0].finish_reason == "stop" then .choices[0].delta.content + "\n" else .choices[0].delta.content end' \
+    | tee $output_file
     echo
 fi
