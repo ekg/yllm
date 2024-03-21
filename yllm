@@ -22,7 +22,7 @@ Options:
   -f, --file <file>         Read text data from the given file.
   -d, --dump-prompt         Write the prompt to stdout and exit.
   -r, --raw-stream          Show the raw JSONL stream from the API.
-  -z, --save-it <dir>       Write inputs and outputs to hash-named file in dir.
+  -z, --save-it <prefix>    Write inputs and outputs to hash-named file with the given prefix.
   -p, --pdf-it              When saving, convert output to PDF.
 
 If no prompt is provided, read from standard input.
@@ -239,7 +239,7 @@ fi
 
 if [[ $YLLM_SAVE_IT ]]; then
     hash=$(echo -n "$COMPLETE_PROMPT" | sha256sum | awk '{print $1}' | head -c 8)
-    output_file_base=$(mktemp -p "$YLLM_SAVE_IT" yllm_$hash.XXXXXX)
+    output_file_base=$(mktemp ${YLLM_SAVE_IT}yllm_$hash.XXXXXX)
     rm -f "$output_file_base"
     output_file=$output_file_base.md
     output_raw=$output_file_base.jsonl
@@ -289,6 +289,13 @@ documents = {doc['id']: doc for doc in record['response']['documents']}
 annotated_text = ""
 last_pos = 0  # Keep track of the last position processed
 
+# Map from document ID to citation order
+doc_id_to_order = {}
+def get_set_id(my_dict, key):
+    if key not in my_dict:
+        my_dict[key] = len(my_dict) + 1
+    return my_dict[key]
+
 # Iterate over the citations
 for citation in citations:
     # Add the text from the last position to the start of the current citation
@@ -300,17 +307,20 @@ for citation in citations:
 
     # Prepare to add links
     links = []
+    seen = set()
     
     # Construct the markdown links for each document in the citation
     for doc_id in citation['document_ids']:
         # Extract the document index from the ID and increment by 1 for natural numbering
         doc_index = doc_id.split('_')[-1].split(':')[0]
+        doc_index = get_set_id(doc_id_to_order, doc_index)
         # Extract the actual URL for the document
         url = documents[doc_id]['url'] if doc_id in documents else "xxxxx"
         # Append the markdown link to the links list
-        # (as long as it's not a duplicate)
-        if url not in links:
+        # (as long as it's not a duplicate URL)
+        if url not in seen:
             links.append(f"[{doc_index}]({url})")
+            seen.add(url)
     
     # Join all links with a comma and add them in a single set of brackets
     annotated_text += f" [{','.join(links)}]"
