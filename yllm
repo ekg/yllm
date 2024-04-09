@@ -22,7 +22,8 @@ Options:
   -f, --file <file>         Read text data from the given file.
   -d, --dump-prompt         Write the prompt to stdout and exit.
   -r, --raw-stream          Show the raw JSONL stream from the API.
-  -z, --save-it <prefix>    Write inputs and outputs to hash-named file with the given prefix.
+  -z, --just-save-it        Write inputs and outputs to hash-named file with prefix='./'
+  -Z, --save-it-to <prefix> Write inputs and outputs to hash-named file with the given prefix.
   -p, --pdf-it              When saving, convert output to PDF.
 
 If no prompt is provided, read from standard input.
@@ -115,6 +116,8 @@ while [[ $# -gt 0 ]]; do
                 FILE_CONTENT="$(cat "$FILE")"
             elif [[ $mimetype == "application/x-ndjson" ]]; then
                 FILE_CONTENT="$(cat "$FILE")"
+            elif [[ $mimetype == "application/vnd.ms-excel" ]]; then
+                FILE_CONTENT="$(ssconvert -T Gnumeric_stf:stf_csv "$FILE" fd://1)"
             elif [[ $mimetype == "application/epub+zip" ]] \
                 || [[ $mimetype == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ]] \
                 || [[ $mimetype == "application/msword" ]] \
@@ -136,7 +139,11 @@ while [[ $# -gt 0 ]]; do
             RAW_STREAM=1
             shift # past argument
             ;;
-        -z|--save-it)
+        -z|--just-save-it)
+            YLLM_SAVE_IT="./"
+            shift # past argument
+            ;;
+        -Z|--save-it-to)
             YLLM_SAVE_IT="$2"
             shift # past argument
             shift # past argument
