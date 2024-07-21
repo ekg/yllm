@@ -198,6 +198,20 @@ send_request() {
         "max_tokens": %d,
         "top_p": %.2f
     }' "$prompt" $YLLM_TEMPERATURE $YLLM_MAX_TOKENS $YLLM_TOP_P)
+    elif [[ $YLLM_ANTHROPIC_MODE ]]; then
+    json_payload=$(printf '{
+            "messages": [
+                {
+                    "role": "user",
+                    "content": %s
+                }
+            ],
+            "model": "%s",
+            "stream": true,
+            "max_tokens": %d,
+            "temperature": %.2f
+        }' "$prompt" "$YLLM_MODEL" $YLLM_MAX_TOKENS $YLLM_TEMPERATURE)
+
     else
     json_payload=$(printf '{
         "messages": [
@@ -226,14 +240,25 @@ send_request() {
 
     trap cleanup EXIT
 
-    #cat $temp_file
+    auth_header="authorization: Bearer $YLLM_API_KEY"
+
+    # if extra curl flags are set, use them, otherwise make the array empty
+    if [[ -z $YLLM_EXTRA_CURL_FLAGS ]]; then
+        YLLM_EXTRA_CURL_FLAGS=()
+    else
+        YLLM_EXTRA_CURL_FLAGS=($YLLM_EXTRA_CURL_FLAGS)
+    fi
+    if [[ $YLLM_ANTHROPIC_MODE ]]; then
+      auth_header="x-api-key: $YLLM_API_KEY"
+      YLLM_EXTRA_CURL_FLAGS=(-H 'anthropic-version: 2023-06-01')
+    fi
 
     $unbuffer curl --request POST \
          --silent \
          --url "$YLLM_API_URL" \
          -H 'content-Type: application/json' \
-         -H "authorization: Bearer $YLLM_API_KEY" \
-         $YLLM_EXTRA_CURL_FLAGS \
+         -H "$auth_header" \
+         "${YLLM_EXTRA_CURL_FLAGS[@]}" \
          --data @"$temp_file"
 }
 
@@ -264,7 +289,19 @@ if [[ $YLLM_DEEPINFRA_MODE ]]; then
     | $unbuffer sed 's/^data: //g' | $unbuffer sed 's/\[DONE\]//' \
     | $unbuffer jq -j --unbuffered 'select(.token.text != null) | .token.text' \
     | tee $output_file
+elif [[ $YLLM_ANTHROPIC_MODE ]]; then
+  # we select content_block_delta
+  send_request "$COMPLETE_PROMPT" \
+      | $unbuffer grep '^data: ' \
+      | $unbuffer grep 'content_block_delta' \
+      | $unbuffer sed 's/^data: //g' \
+      | $unbuffer jq -j --unbuffered '.delta.text' && echo \
+      | tee $output_file
 elif [[ $YLLM_COHERE_MODE ]]; then
+    send_request "$COMPLETE_PROMPT" \
+        | $unbuffer jq -j --unbuffered 'select(.event_type == "text-generation") | if .is_finished then "\n" else .text end' \
+        | tee $output_file
+elif [[ $YLLM_ANTHROPIC_MODE ]]; then
     send_request "$COMPLETE_PROMPT" \
         | $unbuffer jq -j --unbuffered 'select(.event_type == "text-generation") | if .is_finished then "\n" else .text end' \
         | tee $output_file
