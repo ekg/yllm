@@ -9,6 +9,9 @@ function print_help() {
 Usage: $0 [options] [--] [prompt]
 
 Options:
+  --set-default <model>     Set the default model (name or path)
+  --show-default            Show the current default model
+  --clear-default          Clear the default model setting
   -h, --help                Print this help text and exit.
   -s, --settings <file>     Load YLLM_* env settings from the given file.
   -a, --api-url <url>       The API URL to use (default: $YLLM_API_URL).
@@ -152,6 +155,25 @@ while [[ $# -gt 0 ]]; do
             YLLM_PDF_IT=1
             shift # past argument
             ;;
+        --set-default)
+            set_default_model "$2"
+            echo "Default model set to: $2"
+            exit 0
+            ;;
+        --show-default)
+            default_model=$(get_default_model)
+            if [[ -n "$default_model" ]]; then
+                echo "Current default model: $default_model"
+            else
+                echo "No default model set"
+            fi
+            exit 0
+            ;;
+        --clear-default)
+            clear_default_model
+            echo "Default model cleared"
+            exit 0
+            ;;
         *)
             inputs+=("$1")
             shift # past argument
@@ -164,10 +186,49 @@ if [[ $DUMP_PROMPT ]]; then
     printf "%s\n" "${inputs[@]}"
     exit 0
 else
-    # if no model has been specified
+    # Function to get the config file path
+    get_config_file() {
+        echo "$HOME/.yllm.conf"
+    }
+
+    # Function to read the default model from config
+    get_default_model() {
+        local config_file=$(get_config_file)
+        if [[ -f "$config_file" ]]; then
+            source "$config_file"
+            echo "$YLLM_DEFAULT_MODEL"
+        fi
+    }
+
+    # Function to set the default model
+    set_default_model() {
+        local model="$1"
+        local config_file=$(get_config_file)
+        echo "YLLM_DEFAULT_MODEL='$model'" > "$config_file"
+    }
+
+    # Function to clear the default model
+    clear_default_model() {
+        local config_file=$(get_config_file)
+        rm -f "$config_file"
+    }
+
+    # if no model has been specified, try to use default
     if [[ -z "$YLLM_MODEL" ]]; then
-        echo "No model specified. Please set the YLLM_MODEL environment variable, use the -m option, or specify a config file."
-        exit 1
+        default_model=$(get_default_model)
+        if [[ -n "$default_model" ]]; then
+            if [[ -f "$default_model" ]]; then
+                source "$default_model"
+            elif [[ -f "$HOME/.yllm/$default_model" ]]; then
+                source "$HOME/.yllm/$default_model"
+            else
+                echo "Default model config not found: $default_model"
+                exit 1
+            fi
+        else
+            echo "No model specified. Please set the YLLM_MODEL environment variable, use the -m option, specify a config file, or set a default model."
+            exit 1
+        fi
     fi
 fi
 

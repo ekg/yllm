@@ -13,15 +13,18 @@ The `models` directory contains configuration files for various LLM models. To u
 mkdir -p ~/.yllm
 ```
 
-2. Copy your chosen model config and update the API key:
+2. Copy your chosen model config, update the API key, and optionally set it as default:
 ```bash
 # Example: copying a model config
 cp models/yi-34b ~/.yllm/yi-34b
 # Edit the file to add your API key
 nano ~/.yllm/yi-34b
+
+# Optionally set as default model
+yllm --set-default yi-34b
 ```
 
-The config files contain the necessary settings for each model - you just need to add your API key.
+The config files contain the necessary settings for each model - you just need to add your API key. Setting a default model means you don't need to specify `-s model` for every command.
 
 ### Examples
 
@@ -59,6 +62,9 @@ yllm "first document" -u https://cool.site "second document" -u https://xxxx.com
 
 ### Options
 
+- `--set-default <model>`: Set the default model (name or path)
+- `--show-default`: Show the current default model
+- `--clear-default`: Clear the default model setting
 - `-h`, `--help`: Print help text and exit.
 - `-s`, `--settings <file>`: Load `YLLM_*` environment settings from the given file.
 - `-a`, `--api-url`: The API URL to use (default: `https://api.fireworks.ai/inference/v1/chat/completions`).
