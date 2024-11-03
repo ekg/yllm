@@ -6,25 +6,22 @@
 
 ## Setup
 
-To configure `yllm`, you'll need to set up a model configuration file. Here's how to set up Claude 3.5 Sonnet:
+The `models` directory contains configuration files for various LLM models. To use a model:
 
-1. Create the yllm config directory:
+1. Create your yllm config directory:
 ```bash
 mkdir -p ~/.yllm
 ```
 
-2. Create a settings file for Claude 3.5 Sonnet:
+2. Copy the desired model config and update the API key:
 ```bash
-cat > ~/.yllm/sonnet3 << 'EOF'
-YLLM_API_KEY=your_anthropic_api_key_here
-YLLM_API_URL=https://api.anthropic.com/v1/messages
-YLLM_ANTHROPIC_MODE=1
-YLLM_EXTRA_CURL_FLAGS="-H 'anthropic-version: 2023-06-01'"
-YLLM_MODEL=claude-3-5-sonnet-20240620
-EOF
+# For Claude 3.5 Sonnet
+cp models/sonnet3.6 ~/.yllm/sonnet3
+# Edit the file to add your Anthropic API key
+nano ~/.yllm/sonnet3
 ```
 
-Replace `your_anthropic_api_key_here` with your actual Anthropic API key.
+The config files contain the necessary settings for each model, you just need to add your API key.
 
 ### Example
 
