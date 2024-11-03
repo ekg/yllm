@@ -35,8 +35,13 @@ clear_default_model() {
 mask_api_key() {
     local key="$1"
     if [[ -n "$key" ]]; then
-        # Show first 4 chars followed by stars
-        echo "${key:0:4}****"
+        # Show first 5 chars and last 3 chars with stars between
+        local len=${#key}
+        if [ $len -gt 8 ]; then
+            echo "${key:0:5}****${key: -3}"
+        else
+            echo "${key:0:5}***" # For very short keys
+        fi
     else
         echo ""
     fi
