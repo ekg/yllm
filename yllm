@@ -4,19 +4,54 @@ YLLM_MAX_TOKENS=4096
 YLLM_TEMPERATURE=0.1
 YLLM_TOP_P=0.9
 
+# Function to get the config file path
+get_config_file() {
+    echo "$HOME/.yllm.conf"
+}
+
+# Function to read the default model from config
+get_default_model() {
+    local config_file=$(get_config_file)
+    if [[ -f "$config_file" ]]; then
+        source "$config_file"
+        echo "$YLLM_DEFAULT_MODEL"
+    fi
+}
+
+# Function to set the default model
+set_default_model() {
+    local model="$1"
+    local config_file=$(get_config_file)
+    echo "YLLM_DEFAULT_MODEL='$model'" > "$config_file"
+}
+
+# Function to clear the default model
+clear_default_model() {
+    local config_file=$(get_config_file)
+    rm -f "$config_file"
+}
+
+# Get default model info for help text
+DEFAULT_MODEL=$(get_default_model)
+if [[ -n "$DEFAULT_MODEL" ]]; then
+    DEFAULT_MODEL_TEXT="(current default: $DEFAULT_MODEL)"
+else
+    DEFAULT_MODEL_TEXT="(no default set)"
+fi
+
 function print_help() {
   cat <<EOF
 Usage: $0 [options] [--] [prompt]
 
 Options:
-  --set-default <model>     Set the default model (name or path)
-  --show-default            Show the current default model
-  --clear-default          Clear the default model setting
   -h, --help                Print this help text and exit.
   -s, --settings <file>     Load YLLM_* env settings from the given file.
+  -m, --model <model>       The model to use for the completion $DEFAULT_MODEL_TEXT
+  -D, --set-default <model> Set the default model (name or path)
+  -S, --show-default       Show the current default model
+  -C, --clear-default      Clear the default model setting
   -a, --api-url <url>       The API URL to use (default: $YLLM_API_URL).
   -k, --api-key <key>       The API key to use (default: $YLLM_API_KEY).
-  -m, --model <model>       The model to use for the completion (default: $YLLM_MODEL).
   -t, --temperature <t      The temperature for the model (default: $TEMPERATURE).
   -p, --top-p <p>           The top-p value for the model (default: $TOP_P).
   -l, --max-tokens <n>      The maximum number of tokens to generate (default: $MAX_TOKENS).
@@ -155,12 +190,12 @@ while [[ $# -gt 0 ]]; do
             YLLM_PDF_IT=1
             shift # past argument
             ;;
-        --set-default)
+        -D|--set-default)
             set_default_model "$2"
             echo "Default model set to: $2"
             exit 0
             ;;
-        --show-default)
+        -S|--show-default)
             default_model=$(get_default_model)
             if [[ -n "$default_model" ]]; then
                 echo "Current default model: $default_model"
@@ -169,7 +204,7 @@ while [[ $# -gt 0 ]]; do
             fi
             exit 0
             ;;
-        --clear-default)
+        -C|--clear-default)
             clear_default_model
             echo "Default model cleared"
             exit 0
@@ -186,32 +221,6 @@ if [[ $DUMP_PROMPT ]]; then
     printf "%s\n" "${inputs[@]}"
     exit 0
 else
-    # Function to get the config file path
-    get_config_file() {
-        echo "$HOME/.yllm.conf"
-    }
-
-    # Function to read the default model from config
-    get_default_model() {
-        local config_file=$(get_config_file)
-        if [[ -f "$config_file" ]]; then
-            source "$config_file"
-            echo "$YLLM_DEFAULT_MODEL"
-        fi
-    }
-
-    # Function to set the default model
-    set_default_model() {
-        local model="$1"
-        local config_file=$(get_config_file)
-        echo "YLLM_DEFAULT_MODEL='$model'" > "$config_file"
-    }
-
-    # Function to clear the default model
-    clear_default_model() {
-        local config_file=$(get_config_file)
-        rm -f "$config_file"
-    }
 
     # if no model has been specified, try to use default
     if [[ -z "$YLLM_MODEL" ]]; then

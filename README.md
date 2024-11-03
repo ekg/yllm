@@ -62,9 +62,9 @@ yllm "first document" -u https://cool.site "second document" -u https://xxxx.com
 
 ### Options
 
-- `--set-default <model>`: Set the default model (name or path)
-- `--show-default`: Show the current default model
-- `--clear-default`: Clear the default model setting
+- `-D`, `--set-default <model>`: Set the default model (name or path)
+- `-S`, `--show-default`: Show the current default model  
+- `-C`, `--clear-default`: Clear the default model setting
 - `-h`, `--help`: Print help text and exit.
 - `-s`, `--settings <file>`: Load `YLLM_*` environment settings from the given file.
 - `-a`, `--api-url`: The API URL to use (default: `https://api.fireworks.ai/inference/v1/chat/completions`).
