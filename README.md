@@ -16,6 +16,11 @@ The `models` directory contains ready-to-use configurations for many popular mod
 ### Open Source Models
 - Mixtral 8x7B (via `models/mixtral-8x7b`)
 - Mixtral 8x22B (via `models/mixtral-8x22b`)
+
+### Groq-Hosted Models (Fast Inference)
+- Mixtral 8x7B on Groq (via `models/groq-mixtral-8x7b`)
+- LLaMA 3 70B on Groq (via `models/groq-llama3-70b`)
+- Gemma 2B on Groq (via `models/groq-gemma2-9b`)
 - Yi-34B (via `models/yi-34b`)
 - Qwen 72B (via `models/qwen-72b`)
 - Llama 70B (via `models/llama-70b`)
