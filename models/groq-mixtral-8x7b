@@ -1,0 +1,4 @@
+YLLM_MODEL=mixtral-8x7b-32768
+YLLM_API_KEY=...
+YLLM_API_URL=https://api.groq.com/openai/v1/chat/completions
+YLLM_MAX_TOKENS=32768

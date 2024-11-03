@@ -1,0 +1,4 @@
+YLLM_MODEL="Qwen/Qwen1.5-72B-Chat"
+YLLM_API_URL="https://api.together.xyz/v1/chat/completions"
+YLLM_API_KEY=...
+YLLM_MAX_TOKENS=1000

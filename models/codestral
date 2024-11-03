@@ -1,0 +1,4 @@
+YLLM_MODEL="codestral-latest"
+YLLM_API_URL="https://codestral.mistral.ai/v1/chat/completions"
+YLLM_API_KEY=...
+YLLM_MAX_TOKENS=32768

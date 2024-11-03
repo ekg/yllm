@@ -1,0 +1,6 @@
+YLLM_MODEL="command-r-plus"
+YLLM_API_URL="https://api.cohere.ai/v1/chat"
+YLLM_API_KEY=...
+YLLM_COHERE_WEB_MODE=1
+YLLM_MAX_TOKENS=4000
+YLLM_SAVE_IT=./

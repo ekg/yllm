@@ -1,0 +1,3 @@
+YLLM_MODEL="accounts/fireworks/models/yi-34b-200k-capybara"
+YLLM_API_URL="https://api.fireworks.ai/inference/v1/chat/completions"
+YLLM_API_KEY=...

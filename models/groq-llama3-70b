@@ -1,0 +1,4 @@
+YLLM_MODEL=llama3-70b-8192
+YLLM_API_KEY=...
+YLLM_API_URL=https://api.groq.com/openai/v1/chat/completions
+YLLM_MAKE_TOKENS=8192

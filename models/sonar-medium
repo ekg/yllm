@@ -1,0 +1,4 @@
+YLLM_API_KEY=...
+YLLM_API_URL="https://api.perplexity.ai/chat/completions"
+YLLM_MODEL="sonar-medium-online"
+YLLM_MAX_TOKENS=2048

@@ -1,0 +1,4 @@
+YLLM_MODEL=gemma2-9b-it
+YLLM_API_KEY=...
+YLLM_API_URL=https://api.groq.com/openai/v1/chat/completions
+YLLM_MAKE_TOKENS=8192

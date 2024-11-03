@@ -1,0 +1,3 @@
+YLLM_MODEL="llava-hf/llava-1.5-7b-hf"
+YLLM_API_URL="https://api.deepinfra.com/v1/inference"
+YLLM_API_KEY=...

@@ -1,0 +1,4 @@
+YLLM_MODEL=gpt-4-turbo-preview
+YLLM_API_URL='https://api.openai.com/v1/chat/completions'
+YLLM_API_KEY=...
+YLLM_EXTRA_CURL_FLAGS='-H "OpenAI-Organization: org-HbMQYZKuy36h76CiH4KyausG"'

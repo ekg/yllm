@@ -1,0 +1,4 @@
+YLLM_MODEL=""
+YLLM_API_URL="https://api.deepinfra.com/v1/inference/lizpreciatior/lzlv_70b_fp16_hf"
+YLLM_API_KEY=...
+YLLM_DEEPINFRA_MODE=1

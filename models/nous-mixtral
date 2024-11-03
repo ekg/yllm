@@ -1,0 +1,3 @@
+YLLM_MODEL="accounts/fireworks/models/nous-hermes-2-mixtral-8x7b-dpo-fp8"
+YLLM_API_URL="https://api.fireworks.ai/inference/v1/chat/completions"
+YLLM_API_KEY=...

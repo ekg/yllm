@@ -1,0 +1,3 @@
+YLLM_MODEL="accounts/fireworks/models/llama-v2-70b-code-instruct"
+YLLM_API_URL="https://api.fireworks.ai/inference/v1/chat/completions"
+YLLM_API_KEY=...
