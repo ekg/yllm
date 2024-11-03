@@ -31,6 +31,17 @@ clear_default_model() {
     rm -f "$config_file"
 }
 
+# Function to mask API key
+mask_api_key() {
+    local key="$1"
+    if [[ -n "$key" ]]; then
+        # Show first 4 chars followed by stars
+        echo "${key:0:4}****"
+    else
+        echo ""
+    fi
+}
+
 # Get default model info for help text
 DEFAULT_MODEL=$(get_default_model)
 if [[ -n "$DEFAULT_MODEL" ]]; then
@@ -44,6 +55,9 @@ else
     DEFAULT_MODEL_TEXT="(no default set)"
 fi
 
+# Mask the API key for display
+MASKED_API_KEY=$(mask_api_key "$YLLM_API_KEY")
+
 function print_help() {
   cat <<EOF
 Usage: $0 [options] [--] [prompt]
@@ -56,7 +70,7 @@ Options:
   -S, --show-default       Show the current default model
   -C, --clear-default      Clear the default model setting
   -a, --api-url <url>       The API URL to use (default: $YLLM_API_URL).
-  -k, --api-key <key>       The API key to use (default: $YLLM_API_KEY).
+  -k, --api-key <key>       The API key to use (default: $MASKED_API_KEY).
   -t, --temperature <t      The temperature for the model (default: $TEMPERATURE).
   -p, --top-p <p>           The top-p value for the model (default: $TOP_P).
   -l, --max-tokens <n>      The maximum number of tokens to generate (default: $MAX_TOKENS).
