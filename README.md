@@ -16,9 +16,9 @@ mkdir -p ~/.yllm
 2. Copy the desired model config and update the API key:
 ```bash
 # For Claude 3.5 Sonnet
-cp models/sonnet3.6 ~/.yllm/sonnet3
+cp models/sonnet3.6 ~/.yllm/sonnet3.6
 # Edit the file to add your Anthropic API key
-nano ~/.yllm/sonnet3
+nano ~/.yllm/sonnet3.6
 ```
 
 The config files contain the necessary settings for each model, you just need to add your API key.
@@ -28,7 +28,7 @@ The config files contain the necessary settings for each model, you just need to
 To use Claude 3.5 Sonnet, simply run:
 
 ```bash
-yllm -s sonnet3 "What is the capital of France?"
+yllm -s sonnet3.6 "What is the capital of France?"
 ```
 
 ## Usage
