@@ -13,21 +13,27 @@ The `models` directory contains configuration files for various LLM models. To u
 mkdir -p ~/.yllm
 ```
 
-2. Copy the desired model config and update the API key:
+2. Copy your chosen model config and update the API key:
 ```bash
-# For Claude 3.5 Sonnet
-cp models/sonnet3.6 ~/.yllm/sonnet3.6
-# Edit the file to add your Anthropic API key
-nano ~/.yllm/sonnet3.6
+# Example: copying a model config
+cp models/yi-34b ~/.yllm/yi-34b
+# Edit the file to add your API key
+nano ~/.yllm/yi-34b
 ```
 
-The config files contain the necessary settings for each model, you just need to add your API key.
+The config files contain the necessary settings for each model - you just need to add your API key.
 
-### Example
+### Examples
 
-To use Claude 3.5 Sonnet, simply run:
-
+Basic usage with any model:
 ```bash
+yllm -s yi-34b "What is the capital of France?"
+```
+
+For example, to use one of the latest models (Claude 3.5 Sonnet):
+```bash
+cp models/sonnet3.6 ~/.yllm/sonnet3.6
+nano ~/.yllm/sonnet3.6  # Add your API key
 yllm -s sonnet3.6 "What is the capital of France?"
 ```
 
