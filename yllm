@@ -34,6 +34,11 @@ clear_default_model() {
 # Get default model info for help text
 DEFAULT_MODEL=$(get_default_model)
 if [[ -n "$DEFAULT_MODEL" ]]; then
+    if [[ -f "$DEFAULT_MODEL" ]]; then
+        source "$DEFAULT_MODEL"
+    elif [[ -f "$HOME/.yllm/$DEFAULT_MODEL" ]]; then
+        source "$HOME/.yllm/$DEFAULT_MODEL"
+    fi
     DEFAULT_MODEL_TEXT="(current default: $DEFAULT_MODEL)"
 else
     DEFAULT_MODEL_TEXT="(no default set)"
