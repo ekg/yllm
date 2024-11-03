@@ -72,8 +72,8 @@ Options:
   -s, --settings <file>     Load YLLM_* env settings from the given file.
   -m, --model <model>       The model to use for the completion $DEFAULT_MODEL_TEXT
   -D, --set-default <model> Set the default model (name or path)
-  -S, --show-default       Show the current default model
-  -C, --clear-default      Clear the default model setting
+  -S, --show-default        Show the current default model
+  -C, --clear-default       Clear the default model setting
   -a, --api-url <url>       The API URL to use (default: $YLLM_API_URL).
   -k, --api-key <key>       The API key to use (default: $MASKED_API_KEY).
   -t, --temperature <t      The temperature for the model (default: $TEMPERATURE).
