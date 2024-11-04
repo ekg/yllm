@@ -1,120 +1,170 @@
 # yllm - Yet another LLM command line interface
 
-## Description
+A streamlined command-line tool for interacting with LLM APIs that handles multiple input sources and streaming responses. Supports a wide range of models including Anthropic Claude, OpenAI, and many others.
 
-`yllm` is a Bash script utility designed to interact with various LLM APIs including Anthropic Claude, OpenAI, and others. It supports streaming responses and allows users to input prompts, documents (`-f`), or web pages (`-u`). The tool is designed to be both simple for basic usage and powerful for programmatic prompt construction.
+## Quick Setup
 
-## Pre-configured Models
-
-The `models` directory contains ready-to-use configurations for many popular models:
-
-### Anthropic Models
-- Claude 3 Opus (via `models/claude3`)
-- Claude 3 Sonnet 3.6 (via `models/sonnet3.6`)
-- Claude 3 Sonnet 3.5 (via `models/sonnet3.5`)
-
-### Open Source Models
-- Mixtral 8x7B (via `models/mixtral-8x7b`)
-- Mixtral 8x22B (via `models/mixtral-8x22b`)
-
-### Groq-Hosted Models (Fast Inference)
-- Mixtral 8x7B on Groq (via `models/groq-mixtral-8x7b`)
-- LLaMA 3 70B on Groq (via `models/groq-llama3-70b`)
-- Gemma 2B on Groq (via `models/groq-gemma2-9b`)
-- Yi-34B (via `models/yi-34b`)
-- Qwen 72B (via `models/qwen-72b`)
-- Llama 70B (via `models/llama-70b`)
-- Llama 70B Code (via `models/llama-70b-code`)
-- Llama3 70B (via `models/llama3-70b`)
-- Llama3 405B (via `models/llama3-405b`)
-- Mistral 7B (via `models/mistral-7b`)
-- Nous Mixtral (via `models/nous-mixtral`)
-- Striped Hyena (via `models/stripedhyena`)
-- Striped Hyena Hessian (via `models/stripedhyena-hessian`)
-
-### Multimodal Models
-- LLaVA 1.5 7B (via `models/llava-1.5-7b-hf`)
-
-## Setup
-
-The `models` directory contains configuration files for various LLM models. To use a model:
-
-1. Create your yllm config directory:
+1. Create config directory and copy a model config:
 ```bash
 mkdir -p ~/.yllm
+cp models/sonnet3.6 ~/.yllm/sonnet3.6
 ```
 
-2. Copy your chosen model config, update the API key, and optionally set it as default:
+2. Add your API key:
 ```bash
-# Example: copying a model config
-cp models/sonnet3.6 ~/.yllm/sonnet3.6
-# Edit the file to add your API key
 nano ~/.yllm/sonnet3.6
+```
 
-# Optionally set as default model
+3. Set as default model (optional):
+```bash
 yllm --set-default sonnet3.6
 ```
 
-The config files contain the necessary settings for each model - you just need to add your API key. Setting a default model means you don't need to specify `-m model` for every command.
+## Basic Usage
 
-### Examples
-
-Basic usage with any model:
+Simple queries:
 ```bash
-yllm "What is the capital of France?"  # Uses default model if set
-yllm -m sonnet3.6 "What is the capital of France?"  # Explicitly specify model
+yllm "What is the capital of France?"
+yllm -m mixtral-8x7b "Explain quantum computing"  # Specify model
 ```
 
-Complex prompts combining multiple inputs:
+## Working with Input Sources
+
+### Files
 ```bash
-yllm "summarize the following code" -f yllm "suggest ways to improve the documentation:" -f README.md
-yllm "first document" -u https://cool.site "second document" -u https://xxxx.com "compare the two documents"
+# Single file
+yllm -f code.py "Explain this code"
+
+# Multiple files
+yllm -f doc1.txt -f doc2.txt "Compare these documents"
+yllm -f paper.pdf "Summarize this" -f notes.txt "incorporating these points"
 ```
 
-## Usage
-
-Run the script with your desired prompt as an argument:
-
+### URLs
 ```bash
-yllm [options] [--] [prompt]
+# Single URL
+yllm -u https://example.com "Summarize this page"
+
+# Multiple URLs
+yllm -u https://site1.com -u https://site2.com "Compare these websites"
 ```
 
-If no prompt is provided, it will read from standard input.
-The prompt is built from input arguments in the order they are provided.
+### Mixed Sources
+```bash
+# Combine files and URLs
+yllm -f research.pdf "Analyze this paper" -u https://related.com "in context of this article"
 
-### Options
+# Complex combinations
+yllm "First, consider this code:" -f code.py \
+    "Now look at this documentation:" -u https://docs.example.com \
+    "Explain how they relate"
+```
 
-- `-h`, `--help`: Print help text and exit.
-- `-s`, `--settings <file>`: Load YLLM_* env settings from the given file.
-- `-m`, `--model <model>`: The model to use for the completion
-- `-D`, `--set-default <model>`: Set the default model (name or path)
-- `-S`, `--show-default`: Show the current default model
-- `-C`, `--clear-default`: Clear the default model setting
-- `-a`, `--api-url <url>`: The API URL to use
-- `-k`, `--api-key <key>`: The API key to use
-- `-t`, `--temperature <t>`: The temperature for the model (default: 0.1)
-- `-p`, `--top-p <p>`: The top-p value for the model (default: 0.9)
-- `-l`, `--max-tokens <n>`: The maximum number of tokens to generate (default: 4096)
-- `-c`, `--stdin`: Read data from standard input
-- `-u`, `--url <url>`: Read text data from the given URL
-- `-f`, `--file <file>`: Read text data from the given file
-- `-d`, `--dump-prompt`: Write the prompt to stdout and exit
-- `-r`, `--raw-stream`: Show the raw JSONL stream from the API
-- `-z`, `--just-save-it`: Write inputs and outputs to hash-named file with prefix='./'
-- `-Z`, `--save-it-to <prefix>`: Write inputs and outputs to hash-named file with the given prefix
-- `-P`, `--pdf-it`: When saving, convert output to PDF
+### Standard Input
+```bash
+# Implicit stdin (when no other inputs)
+echo "Process this" | yllm "What does this mean?"
+
+# Explicit stdin placement
+cat data.txt | yllm "Before stdin" -c "after stdin"
+```
+
+## Output Control
+
+Save responses:
+```bash
+# Auto-named files in current directory
+yllm -z "Query with saved output"
+
+# Specify output directory
+yllm -Z /path/to/outputs/ "Query with saved output"
+
+# Convert to PDF
+yllm -P "Generate a report" -f data.txt
+```
+
+## Available Model Configurations
+
+YLLM includes configurations for a wide range of models in the `models` directory:
+
+### Anthropic Claude Models
+- Claude 3 (`models/claude3`)
+- Claude 3 Sonnet 3.6 (`models/sonnet3.6`)
+- Claude 3 Sonnet 3.5 (`models/sonnet3.5`)
+
+### Large Language Models
+- Cerebras LLaMA 3.1 Series
+  - 70B (`models/cerebras-llama3.1-70b`)
+  - 8B (`models/cerebras-llama3.1-8b`)
+- LLaMA Series
+  - LLaMA 3 405B (`models/llama3-405b`)
+  - LLaMA 3 70B (`models/llama3-70b`)
+  - LLaMA 70B (`models/llama-70b`)
+  - LLaMA 70B Code (`models/llama-70b-code`)
+
+### Mixtral Models
+- Mixtral 8x22B (`models/mixtral-8x22b`)
+- Mixtral 8x7B (`models/mixtral-8x7b`)
+- Nous Mixtral (`models/nous-mixtral`)
+
+### Groq-Optimized Models
+- Groq Gemma 2 9B (`models/groq-gemma2-9b`)
+- Groq LLaMA 3 70B (`models/groq-llama3-70b`)
+- Groq Mixtral 8x7B (`models/groq-mixtral-8x7b`)
+
+### Specialized Models
+- CMDR Series
+  - CMDR (`models/cmdr`)
+  - CMDR+ (`models/cmdr+`)
+  - CMDR Web (`models/cmdr-web`)
+  - CMDR+ Web (`models/cmdr+web`)
+- Codestral (`models/codestral`)
+- GPT-4 (`models/gpt-4`, `models/gpt4o`)
+- LLaVA 1.5 7B (`models/llava-1.5-7b-hf`)
+- LZLV 70B (`models/lzlv-70b`)
+- Mistral 7B (`models/mistral-7b`)
+- PPLX 70B (`models/pplx-70b`)
+- Qwen 72B (`models/qwen-72b`)
+- Sonar Medium (`models/sonar-medium`)
+- Striped Hyena
+  - Base (`models/stripedhyena`)
+  - Hessian (`models/stripedhyena-hessian`)
+- Yi 34B (`models/yi-34b`)
+
+## Options
+
+```
+-h, --help                   Print help
+-s, --settings <file>       Load YLLM_* settings
+-m, --model <model>         Select model
+-D, --set-default <model>   Set default model
+-S, --show-default         Show default model
+-C, --clear-default        Clear default model
+-a, --api-url <url>        API URL
+-k, --api-key <key>        API key
+-t, --temperature <t>      Temperature (default: 0.1)
+-p, --top-p <p>           Top-p value (default: 0.9)
+-l, --max-tokens <n>      Max tokens (default: 4096)
+-c, --stdin               Read from stdin
+-u, --url <url>           Read from URL
+-f, --file <file>         Read from file
+-d, --dump-prompt         Show prompt and exit
+-r, --raw-stream          Show raw API stream
+-z, --just-save-it        Save to current directory
+-Z, --save-it-to <prefix> Save with prefix
+-P, --pdf-it              Convert output to PDF
+```
 
 ## Dependencies
 
-`yllm` depends on:
-- `curl`: For API requests
-- `lynx`: For web page text extraction
-- `jq`: For JSON processing
-- `file`: For file type detection
-- `pdftotext`: For PDF text extraction
-- `pandoc`: For document format conversion
-- `stdbuf`: For output buffering control
+- `curl`: API requests
+- `lynx`: Web page extraction
+- `jq`: JSON processing
+- `file`: File type detection
+- `pdftotext`: PDF extraction
+- `pandoc`: Format conversion
+- `stdbuf`: Output buffering
 
 ## License
 
-`yllm` is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+MIT License - See [LICENSE](LICENSE) file
