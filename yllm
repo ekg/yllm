@@ -214,6 +214,10 @@ while [[ $# -gt 0 ]]; do
             YLLM_PDF_IT=1
             shift # past argument
             ;;
+        -x|--debug)
+            YLLM_DEBUG=1
+            shift # past argument
+            ;;
         -D|--set-default)
             set_default_model "$2"
             echo "Default model set to: $2"
@@ -345,6 +349,22 @@ send_request() {
     if [[ $YLLM_ANTHROPIC_MODE ]]; then
       auth_header="x-api-key: $YLLM_API_KEY"
       YLLM_EXTRA_CURL_FLAGS=(-H 'anthropic-version: 2023-06-01')
+    fi
+
+    curl_cmd="curl --request POST \
+         --silent \
+         --url \"$YLLM_API_URL\" \
+         -H 'content-Type: application/json' \
+         -H \"$auth_header\" \
+         ${YLLM_EXTRA_CURL_FLAGS[*]} \
+         --data @\"$temp_file\""
+
+    if [[ $YLLM_DEBUG ]]; then
+        echo "Debug: Executing curl command:" >&2
+        echo "$curl_cmd" >&2
+        echo "Debug: Request payload:" >&2
+        cat "$temp_file" >&2
+        echo >&2
     fi
 
     $unbuffer curl --request POST \
