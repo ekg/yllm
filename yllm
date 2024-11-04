@@ -242,6 +242,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -P|--pdf-it)
             YLLM_PDF_IT=1
+            YLLM_SAVE_IT="./"  # Automatically set save-it when pdf-it is used
             shift # past argument
             ;;
         -P|--pdf-it)
@@ -569,10 +570,6 @@ else
 fi
 
 if [[ $YLLM_PDF_IT ]]; then
-    if [[ $YLLM_SAVE_IT ]]; then
-        pandoc $output_file -o $output_file_base.pdf \
-               --pdf-engine=xelatex -V mainfont="Liberation Sans" -V geometry:margin=1in
-    else
-        echo "Error: --pdf-it requires --save-it to be set"
-    fi
+    pandoc $output_file -o $output_file_base.pdf \
+           --pdf-engine=xelatex -V mainfont="Liberation Sans" -V geometry:margin=1in
 fi
