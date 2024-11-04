@@ -463,8 +463,8 @@ elif [[ $YLLM_ANTHROPIC_MODE ]]; then
       | $unbuffer grep '^data: ' \
       | $unbuffer grep 'content_block_delta' \
       | $unbuffer sed 's/^data: //g' \
-      | $unbuffer jq -j --unbuffered '.delta.text' && echo \
-      | tee $output_file
+      | $unbuffer jq -j --unbuffered '.delta.text' \
+      | tee $output_file && echo
 elif [[ $YLLM_COHERE_MODE ]]; then
     send_request "$COMPLETE_PROMPT" \
         | $unbuffer jq -j --unbuffered 'select(.event_type == "text-generation") | if .is_finished then "\n" else .text end' \
