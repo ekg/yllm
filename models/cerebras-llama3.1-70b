@@ -1,3 +1,7 @@
 YLLM_MODEL="llama3.1-70b"
 YLLM_API_URL="https://api.cerebras.ai/v1/chat/completions"
 YLLM_API_KEY=...
+YLLM_TEMPERATURE=0
+YLLM_TOP_P=1
+YLLM_MAX_COMPLETION_TOKENS=-1
+YLLM_SEED=0

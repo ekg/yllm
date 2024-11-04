@@ -4,8 +4,12 @@
 DEFAULT_MAX_TOKENS=4096
 DEFAULT_TEMPERATURE=0.1
 DEFAULT_TOP_P=0.9
+DEFAULT_SEED=0
+DEFAULT_MAX_COMPLETION_TOKENS=-1
 
 # Initialize with defaults
+YLLM_SEED=$DEFAULT_SEED
+YLLM_MAX_COMPLETION_TOKENS=$DEFAULT_MAX_COMPLETION_TOKENS
 YLLM_MAX_TOKENS=$DEFAULT_MAX_TOKENS
 YLLM_TEMPERATURE=$DEFAULT_TEMPERATURE
 YLLM_TOP_P=$DEFAULT_TOP_P
@@ -15,6 +19,8 @@ reset_to_defaults() {
     YLLM_MAX_TOKENS=$DEFAULT_MAX_TOKENS
     YLLM_TEMPERATURE=$DEFAULT_TEMPERATURE
     YLLM_TOP_P=$DEFAULT_TOP_P
+    YLLM_SEED=$DEFAULT_SEED
+    YLLM_MAX_COMPLETION_TOKENS=$DEFAULT_MAX_COMPLETION_TOKENS
     YLLM_MODEL=""
     YLLM_API_URL=""
     YLLM_API_KEY=""
@@ -335,20 +341,37 @@ send_request() {
         }' "$prompt" "$YLLM_MODEL" $YLLM_MAX_TOKENS $YLLM_TEMPERATURE)
 
     else
-    json_payload=$(printf '{
-        "messages": [
-            {
-                "role": "user",
-                "content": %s
-            }
-        ],
-        "model": "%s",
-        "stream": true,
-        "n": 1,
-        "temperature": %.2f,
-        "max_tokens": %d,
-        "top_p": %.2f
-    }' "$prompt" "$YLLM_MODEL" $YLLM_TEMPERATURE $YLLM_MAX_TOKENS $YLLM_TOP_P )
+    if [[ $YLLM_API_URL == *"cerebras.ai"* ]]; then
+        json_payload=$(printf '{
+            "messages": [
+                {
+                    "role": "user",
+                    "content": %s
+                }
+            ],
+            "model": "%s",
+            "stream": true,
+            "temperature": %.2f,
+            "max_completion_tokens": %d,
+            "seed": %d,
+            "top_p": %.2f
+        }' "$prompt" "$YLLM_MODEL" $YLLM_TEMPERATURE $YLLM_MAX_COMPLETION_TOKENS $YLLM_SEED $YLLM_TOP_P)
+    else
+        json_payload=$(printf '{
+            "messages": [
+                {
+                    "role": "user",
+                    "content": %s
+                }
+            ],
+            "model": "%s",
+            "stream": true,
+            "n": 1,
+            "temperature": %.2f,
+            "max_tokens": %d,
+            "top_p": %.2f
+        }' "$prompt" "$YLLM_MODEL" $YLLM_TEMPERATURE $YLLM_MAX_TOKENS $YLLM_TOP_P)
+    fi
     fi
 
     json_payload=$(echo "$json_payload" | jq -c .)
