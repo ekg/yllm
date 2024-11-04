@@ -122,16 +122,16 @@ The prompt is built from input arguments in the order they are provided.
 EOF
 }
 
+# Check if data is being piped in first
+if [ ! -t 0 ]; then
+    STDIN_CONTENT=$(cat)
+    inputs+=("$STDIN_CONTENT")
+fi
+
 # no arguments, print help
 if [[ $# -eq 0 ]]; then
   print_help
   exit 0
-fi
-
-# Check if data is being piped in
-if [ ! -t 0 ]; then
-    STDIN_CONTENT=$(cat)
-    inputs+=("$STDIN_CONTENT")
 fi
 
 # Parse command line arguments and flags
