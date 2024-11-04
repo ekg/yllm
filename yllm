@@ -447,18 +447,7 @@ else
     output_raw=/dev/null
 fi
 
-if [[ $YLLM_PDF_IT ]]; then
-    if [[ $YLLM_SAVE_IT ]]; then
-        pandoc $output_file -o $output_file_base.pdf \
-               --pdf-engine=xelatex -V mainfont="Liberation Sans" -V geometry:margin=1in \
-               -V fontsize=12pt
-        xdg-open $output_file_base.pdf &>/dev/null || \
-        open $output_file_base.pdf &>/dev/null
-    else
-        echo "Error: --pdf-it requires --save-it to be set"
-        exit 1
-    fi
-fi
+# PDF conversion will be done at the end after output is complete
 
 # Send the request and extract the response
 # do this if we're not in deepinfra mode
@@ -570,6 +559,11 @@ else
 fi
 
 if [[ $YLLM_PDF_IT ]]; then
+    # Wait a moment for file writes to complete
+    sleep 0.5
     pandoc $output_file -o $output_file_base.pdf \
-           --pdf-engine=xelatex -V mainfont="Liberation Sans" -V geometry:margin=1in
+           --pdf-engine=xelatex -V mainfont="Liberation Sans" -V geometry:margin=1in \
+           -V fontsize=12pt
+    xdg-open $output_file_base.pdf &>/dev/null || \
+    open $output_file_base.pdf &>/dev/null
 fi
