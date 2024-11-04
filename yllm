@@ -113,6 +113,7 @@ Options:
   -r, --raw-stream          Show the raw JSONL stream from the API.
   -z, --just-save-it        Write inputs and outputs to hash-named file with prefix='./'
   -Z, --save-it-to <prefix> Write inputs and outputs to hash-named file with the given prefix.
+  -P, --pdf-it              When saving, convert output to PDF and open it.
   -p, --pdf-it              When saving, convert output to PDF.
   -x, --debug              Show debug information including the curl command.
 
@@ -237,6 +238,10 @@ while [[ $# -gt 0 ]]; do
         -Z|--save-it-to)
             YLLM_SAVE_IT="$2"
             shift # past argument
+            shift # past argument
+            ;;
+        -P|--pdf-it)
+            YLLM_PDF_IT=1
             shift # past argument
             ;;
         -P|--pdf-it)
@@ -439,7 +444,19 @@ if [[ $YLLM_SAVE_IT ]]; then
 else
     output_file=/dev/null
     output_raw=/dev/null
+fi
 
+if [[ $YLLM_PDF_IT ]]; then
+    if [[ $YLLM_SAVE_IT ]]; then
+        pandoc $output_file -o $output_file_base.pdf \
+               --pdf-engine=xelatex -V mainfont="Liberation Sans" -V geometry:margin=1in \
+               -V fontsize=12pt
+        xdg-open $output_file_base.pdf &>/dev/null || \
+        open $output_file_base.pdf &>/dev/null
+    else
+        echo "Error: --pdf-it requires --save-it to be set"
+        exit 1
+    fi
 fi
 
 # Send the request and extract the response
