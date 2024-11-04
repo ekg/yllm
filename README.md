@@ -133,7 +133,7 @@ YLLM includes configurations for a wide range of models in the `models` director
 
 ## Options
 
-```
+```shell
 -h, --help                   Print help
 -s, --settings <file>       Load YLLM_* settings
 -m, --model <model>         Select model
@@ -157,13 +157,20 @@ YLLM includes configurations for a wide range of models in the `models` director
 
 ## Dependencies
 
+Install all required dependencies on Ubuntu/Debian with:
+
+```shell
+sudo apt install curl lynx jq file poppler-utils pandoc coreutils
+```
+
+Dependencies and their purposes:
 - `curl`: API requests
 - `lynx`: Web page extraction
 - `jq`: JSON processing
 - `file`: File type detection
-- `pdftotext`: PDF extraction
+- `pdftotext` (from `poppler-utils`): PDF extraction
 - `pandoc`: Format conversion
-- `stdbuf`: Output buffering
+- `stdbuf` (from `coreutils`): Output buffering
 
 ## License
 
