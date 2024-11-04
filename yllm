@@ -1,8 +1,29 @@
 #!/bin/bash
 
-YLLM_MAX_TOKENS=4096
-YLLM_TEMPERATURE=0.1
-YLLM_TOP_P=0.9
+# Default values
+DEFAULT_MAX_TOKENS=4096
+DEFAULT_TEMPERATURE=0.1
+DEFAULT_TOP_P=0.9
+
+# Initialize with defaults
+YLLM_MAX_TOKENS=$DEFAULT_MAX_TOKENS
+YLLM_TEMPERATURE=$DEFAULT_TEMPERATURE
+YLLM_TOP_P=$DEFAULT_TOP_P
+
+# Function to reset variables to defaults
+reset_to_defaults() {
+    YLLM_MAX_TOKENS=$DEFAULT_MAX_TOKENS
+    YLLM_TEMPERATURE=$DEFAULT_TEMPERATURE
+    YLLM_TOP_P=$DEFAULT_TOP_P
+    YLLM_MODEL=""
+    YLLM_API_URL=""
+    YLLM_API_KEY=""
+    YLLM_EXTRA_CURL_FLAGS=""
+    YLLM_ANTHROPIC_MODE=""
+    YLLM_DEEPINFRA_MODE=""
+    YLLM_COHERE_MODE=""
+    YLLM_COHERE_WEB_MODE=""
+}
 
 # Function to get the config file path
 get_config_file() {
@@ -109,6 +130,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -s|--settings)
             SETTINGS_FILE="$2"
+            reset_to_defaults
             # Check if the specified settings file exists in the current directory
             if [[ -f "$SETTINGS_FILE" ]]; then
                 source "$SETTINGS_FILE"
@@ -255,6 +277,7 @@ else
     if [[ -z "$YLLM_MODEL" ]]; then
         default_model=$(get_default_model)
         if [[ -n "$default_model" ]]; then
+            reset_to_defaults
             if [[ -f "$default_model" ]]; then
                 source "$default_model"
             elif [[ -f "$HOME/.yllm/$default_model" ]]; then
