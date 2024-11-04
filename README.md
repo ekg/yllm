@@ -134,25 +134,25 @@ YLLM includes configurations for a wide range of models in the `models` director
 ## Options
 
 ```shell
--h, --help                   Print help
+-h, --help                  Print help
 -s, --settings <file>       Load YLLM_* settings
 -m, --model <model>         Select model
 -D, --set-default <model>   Set default model
--S, --show-default         Show default model
--C, --clear-default        Clear default model
--a, --api-url <url>        API URL
--k, --api-key <key>        API key
--t, --temperature <t>      Temperature (default: 0.1)
--p, --top-p <p>           Top-p value (default: 0.9)
--l, --max-tokens <n>      Max tokens (default: 4096)
--c, --stdin               Read from stdin
--u, --url <url>           Read from URL
--f, --file <file>         Read from file
--d, --dump-prompt         Show prompt and exit
--r, --raw-stream          Show raw API stream
--z, --just-save-it        Save to current directory
--Z, --save-it-to <prefix> Save with prefix
--P, --pdf-it              Convert output to PDF
+-S, --show-default          Show default model
+-C, --clear-default         Clear default model
+-a, --api-url <url>         API URL
+-k, --api-key <key>         API key
+-t, --temperature <t>       Temperature (default: 0.1)
+-p, --top-p <p>             Top-p value (default: 0.9)
+-l, --max-tokens <n>        Max tokens (default: 4096)
+-c, --stdin                 Read from stdin
+-u, --url <url>             Read from URL
+-f, --file <file>           Read from file
+-d, --dump-prompt           Show prompt and exit
+-r, --raw-stream            Show raw API stream
+-z, --just-save-it          Save to current directory
+-Z, --save-it-to <prefix>   Save with prefix
+-P, --pdf-it                Convert output to PDF
 ```
 
 ## Dependencies
