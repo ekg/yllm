@@ -1,3 +1,4 @@
-YLLM_MODEL="accounts/fireworks/models/mixtral-8x7b-instruct"
+YLLM_MODEL="accounts/fireworks/models/mixtral-8x7b-instruct-hf"
 YLLM_API_URL="https://api.fireworks.ai/inference/v1/chat/completions"
 YLLM_API_KEY=...
+#YLLM_TEMPERATURE=0.6
