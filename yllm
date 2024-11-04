@@ -128,6 +128,12 @@ if [[ $# -eq 0 ]]; then
   exit 0
 fi
 
+# Check if data is being piped in
+if [ ! -t 0 ]; then
+    STDIN_CONTENT=$(cat)
+    inputs+=("$STDIN_CONTENT")
+fi
+
 # Parse command line arguments and flags
 while [[ $# -gt 0 ]]; do
     case $1 in
