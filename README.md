@@ -88,9 +88,9 @@ yllm -P "Generate a report" -f data.txt
 YLLM includes configurations for a wide range of models in the `models` directory:
 
 ### Anthropic Claude Models
-- Claude 3 (`models/claude3`)
-- Claude 3 Sonnet 3.6 (`models/sonnet3.6`)
-- Claude 3 Sonnet 3.5 (`models/sonnet3.5`)
+- Claude 3 Sonnet 3.5 2024/06/20 (`models/sonnet3.5`)
+- Claude 3 Haiku 3.6 2024/10/22 (`models/sonnet3.6`)
+- Claude 3 Sonnet 3.6 2024/10/22 (`models/sonnet3.6`)
 
 ### Large Language Models
 - Cerebras LLaMA 3.1 Series
