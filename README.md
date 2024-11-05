@@ -119,7 +119,7 @@ YLLM includes configurations for a wide range of models in the `models` director
   - CMDR Web (`models/cmdr-web`)
   - CMDR+ Web (`models/cmdr+web`)
 - Codestral (`models/codestral`)
-- GPT-4 (`models/gpt-4`, `models/gpt4o`)
+- GPT-4 (`models/gpt-4`, `models/gpt-4o`)
 - LLaVA 1.5 7B (`models/llava-1.5-7b-hf`)
 - LZLV 70B (`models/lzlv-70b`)
 - Mistral 7B (`models/mistral-7b`)
