@@ -115,7 +115,7 @@ Options:
   -Z, --save-it-to <prefix> Write inputs and outputs to hash-named file with the given prefix.
   -P, --pdf-it              When saving, convert output to PDF and open it.
   -p, --pdf-it              When saving, convert output to PDF.
-  -x, --debug              Show debug information including the curl command.
+  -x, --debug               Show debug information including the curl command.
 
 If no prompt is provided, read from standard input.
 The prompt is built from input arguments in the order they are provided.
