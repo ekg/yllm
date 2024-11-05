@@ -168,7 +168,18 @@ while [[ $# -gt 0 ]]; do
             shift # past value
             ;;
         -m|--model)
-            YLLM_MODEL="$2"
+            model="$2"
+            reset_to_defaults
+            # Check if the specified model exists as a file
+            if [[ -f "$model" ]]; then
+                source "$model"
+            # If not found, check in the ~/.yllm directory
+            elif [[ -f "$HOME/.yllm/$model" ]]; then
+                source "$HOME/.yllm/$model"
+            else
+                echo "Model config not found: $model"
+                exit 1
+            fi
             shift # past argument
             shift # past value
             ;;
