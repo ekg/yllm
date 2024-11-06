@@ -88,9 +88,9 @@ yllm -P "Generate a report" -f data.txt
 YLLM includes configurations for a wide range of models in the `models` directory:
 
 ### Anthropic Claude Models
-- Claude 3 (`models/claude3`)
-- Claude 3 Sonnet 3.6 (`models/sonnet3.6`)
-- Claude 3 Sonnet 3.5 (`models/sonnet3.5`)
+- Claude 3.5 Sonnet 2024/06/20 (`models/claude-3-5-sonnet`)
+- Claude 3.5 Sonnet 2024/10/22 (`models/claude-3-6-sonnet`)
+- Claude 3.5 Haiku 2024/10/22 (`models/claude-3-6-haiku`)
 
 ### Large Language Models
 - Cerebras LLaMA 3.1 Series
@@ -119,7 +119,7 @@ YLLM includes configurations for a wide range of models in the `models` director
   - CMDR Web (`models/cmdr-web`)
   - CMDR+ Web (`models/cmdr+web`)
 - Codestral (`models/codestral`)
-- GPT-4 (`models/gpt-4`, `models/gpt4o`)
+- GPT-4 (`models/gpt-4`, `models/gpt-4o`, `models/gpt-4o-mini`)
 - LLaVA 1.5 7B (`models/llava-1.5-7b-hf`)
 - LZLV 70B (`models/lzlv-70b`)
 - Mistral 7B (`models/mistral-7b`)
@@ -134,25 +134,25 @@ YLLM includes configurations for a wide range of models in the `models` director
 ## Options
 
 ```shell
--h, --help                   Print help
+-h, --help                  Print help
 -s, --settings <file>       Load YLLM_* settings
 -m, --model <model>         Select model
 -D, --set-default <model>   Set default model
--S, --show-default         Show default model
--C, --clear-default        Clear default model
--a, --api-url <url>        API URL
--k, --api-key <key>        API key
--t, --temperature <t>      Temperature (default: 0.1)
--p, --top-p <p>           Top-p value (default: 0.9)
--l, --max-tokens <n>      Max tokens (default: 4096)
--c, --stdin               Read from stdin
--u, --url <url>           Read from URL
--f, --file <file>         Read from file
--d, --dump-prompt         Show prompt and exit
--r, --raw-stream          Show raw API stream
--z, --just-save-it        Save to current directory
--Z, --save-it-to <prefix> Save with prefix
--P, --pdf-it              Convert output to PDF
+-S, --show-default          Show default model
+-C, --clear-default         Clear default model
+-a, --api-url <url>         API URL
+-k, --api-key <key>         API key
+-t, --temperature <t>       Temperature (default: 0.1)
+-p, --top-p <p>             Top-p value (default: 0.9)
+-l, --max-tokens <n>        Max tokens (default: 4096)
+-c, --stdin                 Read from stdin
+-u, --url <url>             Read from URL
+-f, --file <file>           Read from file
+-d, --dump-prompt           Show prompt and exit
+-r, --raw-stream            Show raw API stream
+-z, --just-save-it          Save to current directory
+-Z, --save-it-to <prefix>   Save with prefix
+-P, --pdf-it                Convert output to PDF
 ```
 
 ## Dependencies
